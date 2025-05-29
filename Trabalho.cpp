@@ -24,6 +24,17 @@ int temposEntrada[MAX_PEDIDOS];
 int pedidosGeradosTotal = 0;
 
 
+char Menu(){
+	printf("\n====== MENU ======\n");
+    printf("[A]. Escolher quantidade de cozinheiros\n");
+    printf("[B]. Remover um cozinheiro\n");
+    printf("[C]. Qual o tempo de simulaÃ§Ã£o\n");
+    printf("[D]. Simular\n");
+    printf("[ESC]. Sair\n");
+    printf("Escolha: ");
+    return toupper(getch());
+}
+
 //caixa para cuxinehiro
 TpCozinheiro *NovaCaixaCozinheiro(int id){
 	TpCozinheiro *caixa = new TpCozinheiro;
@@ -191,19 +202,43 @@ void RemoverCozinheiro(TpDesc &desc, int id) {
 }
 
 
-char Menu(){
-	printf("\n====== MENU ======\n");
-    printf("[A]. Escolher quantidade de cozinheiros\n");
-    printf("[B]. Remover um cozinheiro\n");
-    printf("[C]. Qual o tempo de simulaÃ§Ã£o\n");
-    printf("[D]. Simular\n");
-    printf("[ESC]. Sair\n");
-    printf("Escolha: ");
-    return toupper(getch());
+void LimparCozinheiros(TpDesc &desc) {
+    TpCozinheiro *atual = desc.inicio;
+    while (atual != NULL) {
+        TpPedido *p = atual->listaPedidos;
+        while (p != NULL) {
+            TpPedido *aux = p;
+            p = p->prox;
+            delete aux;
+        }
+        TpCozinheiro *auxCoz = atual;
+        atual = atual->prox;
+        delete auxCoz;
+    }
+    desc.inicio = desc.fim = NULL;
+    desc.tamanho = 0;
 }
+
 
 void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
     int qtdPedidos;
+    totalExpresso = 0;
+    totalRegular = 0;
+    totalPreAgendado = 0;
+
+    somaEsperaExpresso = 0;
+    somaEsperaRegular = 0;
+    somaEsperaPreAgendado = 0;
+
+    pedidosNaoFinalizados = 0;
+    pedidosGeradosTotal = 0;
+
+    for (int i = 0; i < MAX_PEDIDOS; i++) {
+        pedidosGerados[i] = NULL;
+        temposEntrada[i] = 0;
+        temposPreparoOriginais[i] = 0;
+    }
+    
     srand(time(NULL));
     qtdPedidos = 5 + rand() % 16; // entre 5 e 20
     printf("Número de pedidos sorteados para distribuir: %d\n", qtdPedidos);
@@ -306,34 +341,37 @@ void Executar() {
     cozinheiros.inicio = NULL;
     cozinheiros.fim = NULL;
     cozinheiros.tamanho = 0;
-	
+	clrscr();
     do{
     	clrscr();
     	op = Menu();
         switch (op) {
             case 'A': {
-            	clrscr();
-                int qtd, i = 1;
-                printf("Quantos cozinheiros deseja adicionar?\n");
-                scanf("%d", &qtd);
-                getche();
+			    clrscr();
+			    int qtd, i = 1;
+			    printf("Quantos cozinheiros deseja adicionar?\n");
+			    scanf("%d", &qtd);
+			    getche();
+			
+			    // Limpa cozinheiros antigos antes de adicionar novos
+			    LimparCozinheiros(cozinheiros);
+			
+			    while (i <= qtd) {
+			        TpCozinheiro *novo = NovaCaixaCozinheiro(i);
+			
+			        if (cozinheiros.inicio == NULL) {
+			            cozinheiros.inicio = cozinheiros.fim = novo;
+			        } else {
+			            cozinheiros.fim->prox = novo;
+			            cozinheiros.fim = novo;
+			        }
+			
+			        cozinheiros.tamanho++;
+			        i++;
+			    }
+			    break;
+			}
 
-                while (i <= qtd) {
-                    TpCozinheiro *novo = NovaCaixaCozinheiro(i);
-
-                    // Inserir novo cozinheiro na lista
-                    if (cozinheiros.inicio == NULL) {
-                        cozinheiros.inicio = cozinheiros.fim = novo;
-                    } else {
-                        cozinheiros.fim->prox = novo;
-                        cozinheiros.fim = novo;
-                    }
-
-                    cozinheiros.tamanho++;
-                    i++;
-                }
-                break;
-            }
             
             case 'B': {
 			    clrscr();
@@ -356,6 +394,7 @@ void Executar() {
             case 'D':
             	clrscr();
     			SimularRestaurante(cozinheiros, tempoSimulacao);
+    			
     			break;
         }
     } while (op != 27);
