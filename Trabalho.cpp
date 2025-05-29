@@ -4,96 +4,22 @@
 #include <conio2.h>
 #include <windows.h>
 
-#include filaPrio.h
+#include "Tad.h"
 
-//	O programa deve utilizar: Descritor, Listas Dinâmicas Simplesmente e Duplamente encadeadas, todos ligados, conforme a otimiza��o do processo evidenciado
+//	O programa deve utilizar: Descritor, Listas DinÃ¢micas Simplesmente e Duplamente encadeadas, todos ligados, conforme a otimizaï¿½ï¿½o do processo evidenciado
 //do while(!kbhit()&& tempo)
 // insere, retira, volta, esc
 
-void DistribuirPedidos(TpDesc &desc, FILE *arquivo, int qtdPedidos) {
-    int count = 0;
-    TpCozinheiro *cozAtual = desc.inicio;
-
-    while (count < qtdPedidos) {
-        if (cozAtual == NULL)
-            cozAtual = desc.inicio;
-
-        TpPedido *p = GerarPedidoAleatorio(arquivo);
-        InserirPedidoOrdenado(cozAtual->listaPedidos, p);
-
-        cozAtual = cozAtual->prox;
-        count++;
-    }
-}
-
-int CalcularCarga(TpPedido *lista) {
-    int carga = 0;
-    while (lista != NULL) {
-        carga += lista->tempo;
-        lista = lista->prox;
-    }
-    return carga;
-}
-
-void DistribuirPedidos(TpDesc &desc, FILE *arquivo, int qtdPedidos) {
-    int count = 0;
-
-    while (count < qtdPedidos) {
-        TpPedido *novoPedido = GerarPedidoAleatorio(arquivo);
-
-        TpCozinheiro *escolhido = desc.inicio;
-        int menorCarga = CalcularCarga(desc.inicio->listaPedidos);
-        TpCozinheiro *atual = desc.inicio->prox;
-
-        while (atual != NULL) {
-            int cargaAtual = CalcularCarga(atual->listaPedidos);
-            if (cargaAtual < menorCarga) {
-                menorCarga = cargaAtual;
-                escolhido = atual;
-            }
-            atual = atual->prox;
-        }
-
-        InserirPedidoOrdenado(escolhido->listaPedidos, novoPedido);
-
-        // Atualiza estado do cozinheiro escolhido
-        if (escolhido->listaPedidos != NULL)
-            escolhido->estado = 'O';
-
-        count++;
-    }
-
-    // Após a distribuição, atualizar o estado dos demais
-    TpCozinheiro *temp = desc.inicio;
-    while (temp != NULL) {
-        if (temp->listaPedidos == NULL)
-            temp->estado = 'L';
-        temp = temp->prox;
-    }
-}
-
-
-
-//caixa para cuxinehiro
-TpPont *NovaCaixaCozinheiro(int id, int estado){
-	TpPedido *caixa = new TpPedido;
-	caixa -> id = id;
-	caixa -> estado = L; //L de Lula
-	caixa -> prox = NULL;
-	caixa -> listaPedidos = NULL;
-	return caixa;
-}
-
 
 TpPedido* GerarPedidoAleatorio() {
-    FILE *ptr;
+    FILE *ptr = fopen("Pedidos.txt", "r");
     TpPedido *pedido = NULL;
     int tempo = 0, linha_aleatoria = 0, linha_atual = 1;
     char buffer[256], tipo_str[20], itens[256];
 
-    ptr = fopen("Pedidos.txt", "r");
+   
     if (ptr != NULL) {
-        linha_aleatoria = 1 + (rand() % 15); // Supondo até 15 linhas
+        linha_aleatoria = 1 + (rand() % 15); // Supondo atÃ© 15 linhas
         rewind(ptr);
 
         while (linha_atual <= linha_aleatoria) {
@@ -119,7 +45,7 @@ TpPedido* GerarPedidoAleatorio() {
                 }
                 linha_atual++;
             } else {
-                // Força saída do laço caso erro de leitura (sem usar break)
+                // ForÃ§a saÃ­da do laÃ§o caso erro de leitura (sem usar break)
                 linha_atual = linha_aleatoria + 1;
             }
         }
@@ -127,11 +53,72 @@ TpPedido* GerarPedidoAleatorio() {
         fclose(ptr);
     }
 
-    return pedido; // permitido aqui, pois está no fim da função
+    return pedido; // permitido aqui, pois estÃ¡ no fim da funÃ§Ã£o
+}
+
+int CalcularCarga(TpPedido *lista) {
+    int carga = 0;
+    while (lista != NULL) {
+        carga += lista->tempo;
+        lista = lista->prox;
+    }
+    return carga;
+}
+
+void DistribuirPedidos(TpDesc &desc, int qtdPedidos) {
+    int count = 0;
+
+    while (count < qtdPedidos) {
+        TpPedido *novoPedido = GerarPedidoAleatorio();
+
+        TpCozinheiro *escolhido = desc.inicio;
+        int menorCarga = CalcularCarga(desc.inicio->listaPedidos);
+        TpCozinheiro *atual = desc.inicio->prox;
+
+        while (atual != NULL) {
+            int cargaAtual = CalcularCarga(atual->listaPedidos);
+            if (cargaAtual < menorCarga) {
+                menorCarga = cargaAtual;
+                escolhido = atual;
+            }
+            atual = atual->prox;
+        }
+
+        InserirPedidoOrdenado(escolhido->listaPedidos, novoPedido);
+
+        // Atualiza estado do cozinheiro escolhido
+        if (escolhido->listaPedidos != NULL)
+            escolhido->estado = 'O';
+
+        count++;
+    }
+
+    // Atualizar estado dos que ficaram sem pedidos
+    TpCozinheiro *temp = desc.inicio;
+    while (temp != NULL) {
+        if (temp->listaPedidos == NULL)
+            temp->estado = 'L';
+        temp = temp->prox;
+    }
 }
 
 
-void RemoverCozinheiro(TpCozinheiro* &lista, int id) {
+
+
+
+
+//caixa para cuxinehiro
+TpCozinheiro *NovaCaixaCozinheiro(int id){
+	TpCozinheiro *caixa = new TpCozinheiro;
+	caixa -> id = id;
+	caixa -> estado = 'L'; //L de Livre
+	caixa -> prox = NULL;
+	caixa -> listaPedidos = NULL;
+	return caixa;
+}
+
+
+void RemoverCozinheiro(TpCozinheiro *lista, int id) {
     TpCozinheiro *anterior = NULL;
     TpCozinheiro *atual = lista;
 
@@ -159,45 +146,55 @@ void RemoverCozinheiro(TpCozinheiro* &lista, int id) {
     }
 }
 
-void Menu() {
-    int op;
+char Menu(){
+	printf("\n====== MENU ======\n");
+    printf("[A]. Escolher quantidade de cozinheiros\n");
+    printf("[B]. Remover um cozinheiro\n");
+    printf("[C]. Simular\n");
+    printf("[ESC]. Sair\n");
+    printf("Escolha: ");
+    return toupper(getch());
+}
 
-    do {
-        printf("\n====== MENU ======\n");
-        printf("1. Escolher quantidade de cozinheiros\n");
-        printf("2. Remover um cozinheiro\n");
-        printf("3. Simular\n");
-        printf("4. Listar cozinheiros\n");
-        printf("ESC. Sair\n");
-        printf("Escolha: ");
-        scanf("%d", &op);
-
+void Executar() {
+    char op;
+	TpPedido pedido;
+	TpCozinheiro cozinheiros;
+	op = Menu();
+    do{
         switch (op) {
-            case 1: {
+            case 'A': {
+            	clrscr();
                 int qtd, i= 1;
-                printf("Quantos cozinheiros deseja adicionar? ");
+                printf("Quantos cozinheiros deseja adicionar?\n");
                 scanf("%d", &qtd);
+                getche();
 				while(i<=qtd){
 					NovaCaixaCozinheiro(i);
 					i++;
 				}
-                break;
-            }
-            case 2: {
+			}
+            break;
+            
+            case 'B':{
+            	clrscr();
                 int id;
-                printf("ID do cozinheiro a remover: ");
+                printf("ID do cozinheiro a remover:\n");
                 scanf("%d", &id);
-                RemoverCozinheiro(&listaCozinheiros, id);
+                getche();
+                RemoverCozinheiro(&cozinheiros, id);
                 break;
             }
-            case 3:
-                Simular();
-                break;
-            case 4:
-                ListarCozinheiros(listaCozinheiros);
+            case 'C':
+                //Simular();
                 break;
             default:
-                printf("Opção inválida!\n");
+                printf("OpÃ§Ã£o invÃ¡lida!\n");
         }
     } while (op != 27);
+}
+
+int main(){
+	Executar();
+	return 0;
 }
