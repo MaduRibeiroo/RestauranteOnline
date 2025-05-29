@@ -6,9 +6,19 @@
 
 #include "Tad.h"
 
-//	O programa deve utilizar: Descritor, Listas DinÃ¢micas Simplesmente e Duplamente encadeadas, todos ligados, conforme a otimizaï¿½ï¿½o do processo evidenciado
+//	O programa deve utilizar: Descritor, Listas DinÃƒÂ¢micas Simplesmente e Duplamente encadeadas, todos ligados, conforme a otimizaÃ¯Â¿Â½Ã¯Â¿Â½o do processo evidenciado
 //do while(!kbhit()&& tempo)
 // insere, retira, volta, esc
+int totalExpresso = 0, totalRegular = 0, totalPreAgendado = 0;
+int somaEsperaExpresso = 0, somaEsperaRegular = 0, somaEsperaPreAgendado = 0;
+int pedidosNaoFinalizados = 0;
+
+// Vetor auxiliar para guardar tempos de entrada
+const int MAX_PEDIDOS = 1000;
+TpPedido* pedidosGerados[MAX_PEDIDOS];
+int temposEntrada[MAX_PEDIDOS];
+int pedidosGeradosTotal = 0;
+
 
 
 TpPedido* GerarPedidoAleatorio() {
@@ -19,7 +29,7 @@ TpPedido* GerarPedidoAleatorio() {
 
    
     if (ptr != NULL) {
-        linha_aleatoria = 1 + (rand() % 15); // Supondo atÃ© 15 linhas
+        linha_aleatoria = 1 + (rand() % 15); // Supondo atÃƒÂ© 15 linhas
         rewind(ptr);
 
         while (linha_atual <= linha_aleatoria) {
@@ -45,7 +55,7 @@ TpPedido* GerarPedidoAleatorio() {
                 }
                 linha_atual++;
             } else {
-                // ForÃ§a saÃ­da do laÃ§o caso erro de leitura (sem usar break)
+                // ForÃƒÂ§a saÃƒÂ­da do laÃƒÂ§o caso erro de leitura (sem usar break)
                 linha_atual = linha_aleatoria + 1;
             }
         }
@@ -53,7 +63,7 @@ TpPedido* GerarPedidoAleatorio() {
         fclose(ptr);
     }
 
-    return pedido; // permitido aqui, pois estÃ¡ no fim da funÃ§Ã£o
+    return pedido; // permitido aqui, pois estÃƒÂ¡ no fim da funÃƒÂ§ÃƒÂ£o
 }
 
 int CalcularCarga(TpPedido *lista) {
@@ -71,6 +81,11 @@ void DistribuirPedidos(TpDesc &desc, int qtdPedidos) {
     while (count < qtdPedidos) {
         TpPedido *novoPedido = GerarPedidoAleatorio();
 
+        // Armazena o pedido e tempo de entrada (0 por enquanto)
+        pedidosGerados[pedidosGeradosTotal] = novoPedido;
+        temposEntrada[pedidosGeradosTotal] = 0; // tempo inicial da simulação
+        pedidosGeradosTotal++;
+
         TpCozinheiro *escolhido = desc.inicio;
         int menorCarga = CalcularCarga(desc.inicio->listaPedidos);
         TpCozinheiro *atual = desc.inicio->prox;
@@ -86,14 +101,12 @@ void DistribuirPedidos(TpDesc &desc, int qtdPedidos) {
 
         InserirPedidoOrdenado(escolhido->listaPedidos, novoPedido);
 
-        // Atualiza estado do cozinheiro escolhido
         if (escolhido->listaPedidos != NULL)
             escolhido->estado = 'O';
 
         count++;
     }
 
-    // Atualizar estado dos que ficaram sem pedidos
     TpCozinheiro *temp = desc.inicio;
     while (temp != NULL) {
         if (temp->listaPedidos == NULL)
@@ -101,6 +114,7 @@ void DistribuirPedidos(TpDesc &desc, int qtdPedidos) {
         temp = temp->prox;
     }
 }
+
 
 
 
@@ -159,25 +173,29 @@ char Menu(){
 	printf("\n====== MENU ======\n");
     printf("[A]. Escolher quantidade de cozinheiros\n");
     printf("[B]. Remover um cozinheiro\n");
-    printf("[C]. Simular\n");
+    printf("[C]. Qual o tempo de simulação\n");
+    printf("[D]. Simular\n");
     printf("[ESC]. Sair\n");
     printf("Escolha: ");
     return toupper(getch());
 }
 
-void Simular(TpDesc &desc) {
-    int tempoTotal, qtdPedidos;
-
-    printf("Digite a duração da simulação (em unidades de tempo): ");
-    scanf("%d", &tempoTotal);
-
-    printf("Digite a quantidade de pedidos para distribuir: ");
-    scanf("%d", &qtdPedidos);
+void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
+    int qtdPedidos;
+    srand(time(NULL));
+    qtdPedidos = 5 + rand() % 16; // entre 5 e 20
+    printf("Número de pedidos sorteados para distribuir: %d\n", qtdPedidos);
 
     DistribuirPedidos(desc, qtdPedidos);
 
-    for (int tempo = 1; tempo <= tempoTotal; tempo++) {
+    for (int tempo = 1; tempo <= tempoSimulacao; tempo++) {
         printf("\n=== Tempo: %d ===\n", tempo);
+
+        if (tempo == 1) {
+            for (int i = 0; i < pedidosGeradosTotal; i++) {
+                temposEntrada[i] = tempo;
+            }
+        }
 
         TpCozinheiro *coz = desc.inicio;
         while (coz != NULL) {
@@ -189,30 +207,70 @@ void Simular(TpDesc &desc) {
                 printf("   Trabalhando no pedido: %s (%d restante)\n", pedido->itens, pedido->tempo);
 
                 if (pedido->tempo <= 0) {
+                    int tempoEspera = tempo - EncontrarTempoEntrada(pedido);
+
+                    if (strcmp(pedido->tipo, "Expresso") == 0) {
+                        totalExpresso++;
+                        somaEsperaExpresso += tempoEspera;
+                    } else if (strcmp(pedido->tipo, "Regular") == 0) {
+                        totalRegular++;
+                        somaEsperaRegular += tempoEspera;
+                    } else {
+                        totalPreAgendado++;
+                        somaEsperaPreAgendado += tempoEspera;
+                    }
+
                     TpPedido *finalizado = pedido;
                     coz->listaPedidos = pedido->prox;
-                    if (coz->listaPedidos != NULL) {
+                    if (coz->listaPedidos != NULL)
                         coz->listaPedidos->ant = NULL;
-                    }
+
                     printf("   Pedido finalizado!\n");
                     delete finalizado;
 
-                    if (coz->listaPedidos == NULL) {
+                    if (coz->listaPedidos == NULL)
                         coz->estado = 'L';
-                    }
                 }
             } else {
                 printf("   Sem pedidos\n");
                 coz->estado = 'L';
             }
+
             coz = coz->prox;
         }
 
-        Sleep(1000); // Pausa para simular o tempo passando
+        Sleep(1000);
+    }
+
+    pedidosNaoFinalizados = 0;
+    TpCozinheiro *cz = desc.inicio;
+    while (cz != NULL) {
+        TpPedido *p = cz->listaPedidos;
+        while (p != NULL) {
+            pedidosNaoFinalizados++;
+            p = p->prox;
+        }
+        cz = cz->prox;
     }
 
     printf("\n=== Fim da simulação ===\n");
+    printf("\n--- Relatório Final ---\n");
+    printf("Pedidos Expresso finalizados: %d\n", totalExpresso);
+    printf("Pedidos Regular finalizados: %d\n", totalRegular);
+    printf("Pedidos Pré-Agendado finalizados: %d\n", totalPreAgendado);
+
+    printf("\nTempo médio de espera:\n");
+    if (totalExpresso > 0)
+        printf("  Expresso: %.2f unidades\n", (float)somaEsperaExpresso / totalExpresso);
+    if (totalRegular > 0)
+        printf("  Regular: %.2f unidades\n", (float)somaEsperaRegular / totalRegular);
+    if (totalPreAgendado > 0)
+        printf("  Pré-Agendado: %.2f unidades\n", (float)somaEsperaPreAgendado / totalPreAgendado);
+
+    printf("\nPedidos não finalizados: %d\n", pedidosNaoFinalizados);
 }
+
+
 
 void Executar() {
     char op;
@@ -256,15 +314,22 @@ void Executar() {
 			    printf("ID do cozinheiro a remover:\n");
 			    scanf("%d", &id);
 			    getche();
-			    RemoverCozinheiro(cozinheiros, id); // <- sem &
+			    RemoverCozinheiro(cozinheiros, id);
 			    break;
 			}
 
-            case 'C':
-                //Simular();
+            case 'C': {
+                clrscr();
+                printf("Defina o tempo total de simulação (em unidades de tempo):\n");
+                scanf("%d", &tempoSimulacao);
+                getche();
+                printf("Tempo de simulação definido como %d unidades.\n", tempoSimulacao);
                 break;
-            default:
-                printf("OpÃ§Ã£o invÃ¡lida!\n");
+            }
+            case 'D':
+            	clrscr();
+    			SimularRestaurante(cozinheiros, tempoSimulacao);
+    			break;
         }
     } while (op != 27);
 }
