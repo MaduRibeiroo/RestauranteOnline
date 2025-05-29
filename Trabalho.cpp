@@ -118,17 +118,22 @@ TpCozinheiro *NovaCaixaCozinheiro(int id){
 }
 
 
-void RemoverCozinheiro(TpCozinheiro *lista, int id) {
+void RemoverCozinheiro(TpDesc &desc, int id) {
     TpCozinheiro *anterior = NULL;
-    TpCozinheiro *atual = lista;
+    TpCozinheiro *atual = desc.inicio;
 
     while (atual != NULL) {
         if (atual->id == id) {
             if (anterior == NULL) {
-                lista = atual->prox;
+                desc.inicio = atual->prox;
             } else {
                 anterior->prox = atual->prox;
             }
+
+            if (desc.fim == atual) {
+                desc.fim = anterior;
+            }
+
             TpPedido *p = atual->listaPedidos;
             TpPedido *aux;
             while (p != NULL) {
@@ -138,13 +143,17 @@ void RemoverCozinheiro(TpCozinheiro *lista, int id) {
             }
 
             delete atual;
-            atual = NULL; 
+            atual = NULL;
+
+            desc.tamanho--;
+            atual = (anterior == NULL) ? desc.inicio : anterior->prox;
         } else {
             anterior = atual;
             atual = atual->prox;
         }
     }
 }
+
 
 char Menu(){
 	printf("\n====== MENU ======\n");
@@ -156,35 +165,101 @@ char Menu(){
     return toupper(getch());
 }
 
+void Simular(TpDesc &desc) {
+    int tempoTotal, qtdPedidos;
+
+    printf("Digite a duração da simulação (em unidades de tempo): ");
+    scanf("%d", &tempoTotal);
+
+    printf("Digite a quantidade de pedidos para distribuir: ");
+    scanf("%d", &qtdPedidos);
+
+    DistribuirPedidos(desc, qtdPedidos);
+
+    for (int tempo = 1; tempo <= tempoTotal; tempo++) {
+        printf("\n=== Tempo: %d ===\n", tempo);
+
+        TpCozinheiro *coz = desc.inicio;
+        while (coz != NULL) {
+            printf("Cozinheiro %d - Estado: %c\n", coz->id, coz->estado);
+            if (coz->listaPedidos != NULL) {
+                TpPedido *pedido = coz->listaPedidos;
+                pedido->tempo--;
+
+                printf("   Trabalhando no pedido: %s (%d restante)\n", pedido->itens, pedido->tempo);
+
+                if (pedido->tempo <= 0) {
+                    TpPedido *finalizado = pedido;
+                    coz->listaPedidos = pedido->prox;
+                    if (coz->listaPedidos != NULL) {
+                        coz->listaPedidos->ant = NULL;
+                    }
+                    printf("   Pedido finalizado!\n");
+                    delete finalizado;
+
+                    if (coz->listaPedidos == NULL) {
+                        coz->estado = 'L';
+                    }
+                }
+            } else {
+                printf("   Sem pedidos\n");
+                coz->estado = 'L';
+            }
+            coz = coz->prox;
+        }
+
+        Sleep(1000); // Pausa para simular o tempo passando
+    }
+
+    printf("\n=== Fim da simulação ===\n");
+}
+
 void Executar() {
     char op;
 	TpPedido pedido;
-	TpCozinheiro cozinheiros;
-	op = Menu();
+	TpDesc cozinheiros; 
+    cozinheiros.inicio = NULL;
+    cozinheiros.fim = NULL;
+    cozinheiros.tamanho = 0;
+	
     do{
+    	clrscr();
+    	op = Menu();
         switch (op) {
             case 'A': {
             	clrscr();
-                int qtd, i= 1;
+                int qtd, i = 1;
                 printf("Quantos cozinheiros deseja adicionar?\n");
                 scanf("%d", &qtd);
                 getche();
-				while(i<=qtd){
-					NovaCaixaCozinheiro(i);
-					i++;
-				}
-			}
-            break;
-            
-            case 'B':{
-            	clrscr();
-                int id;
-                printf("ID do cozinheiro a remover:\n");
-                scanf("%d", &id);
-                getche();
-                RemoverCozinheiro(&cozinheiros, id);
+
+                while (i <= qtd) {
+                    TpCozinheiro *novo = NovaCaixaCozinheiro(i);
+
+                    // Inserir novo cozinheiro na lista
+                    if (cozinheiros.inicio == NULL) {
+                        cozinheiros.inicio = cozinheiros.fim = novo;
+                    } else {
+                        cozinheiros.fim->prox = novo;
+                        cozinheiros.fim = novo;
+                    }
+
+                    cozinheiros.tamanho++;
+                    i++;
+                }
                 break;
             }
+            
+            case 'B': {
+			    clrscr();
+			    int id;
+			    printf("ID do cozinheiro a remover:\n");
+			    scanf("%d", &id);
+			    getche();
+			    RemoverCozinheiro(cozinheiros, id); // <- sem &
+			    break;
+			}
+
             case 'C':
                 //Simular();
                 break;
