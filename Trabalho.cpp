@@ -28,7 +28,7 @@ char Menu(){
 	printf("\n====== MENU ======\n");
     printf("[A]. Escolher quantidade de cozinheiros\n");
     printf("[B]. Remover um cozinheiro\n");
-    printf("[C]. Qual o tempo de simulaÃ§Ã£o\n");
+    printf("[C]. Qual o tempo de simulacao\n");
     printf("[D]. Simular\n");
     printf("[ESC]. Sair\n");
     printf("Escolha: ");
@@ -247,7 +247,7 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
     else{
     	srand(time(NULL));
 	    qtdPedidos = 5 + rand() % 16; // entre 5 e 20
-	    printf("Número de pedidos sorteados para distribuir: %d\n", qtdPedidos);
+	    printf("Numero de pedidos sorteados para distribuir: %d\n", qtdPedidos);
 	
 	    DistribuirPedidos(desc, qtdPedidos);
 	
@@ -318,21 +318,21 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
 		}
 		
 		// Relatório final
-		printf("\n=== Fim da simulação ===\n");
-		printf("\n--- Relatório Final ---\n");
+		printf("\n=== Fim da simulacao ===\n");
+		printf("\n--- Relatorio Final ---\n");
 		printf("Pedidos Expresso finalizados: %d\n", totalExpresso);
 	    printf("Pedidos Regular finalizados: %d\n", totalRegular);
-	    printf("Pedidos Pré-Agendado finalizados: %d\n", totalPreAgendado);
+	    printf("Pedidos Pre-Agendado finalizados: %d\n", totalPreAgendado);
 	
-	    printf("\nTempo médio de espera:\n");
+	    printf("\nTempo medio de espera:\n");
 	    if (totalExpresso > 0)
 	        printf("  Expresso: %.2f unidades\n", (float)somaEsperaExpresso / totalExpresso);
 	    if (totalRegular > 0)
 	        printf("  Regular: %.2f unidades\n", (float)somaEsperaRegular / totalRegular);
 	    if (totalPreAgendado > 0)
-	        printf("  Pré-Agendado: %.2f unidades\n", (float)somaEsperaPreAgendado / totalPreAgendado);
+	        printf("  Pre-Agendado: %.2f unidades\n", (float)somaEsperaPreAgendado / totalPreAgendado);
 	
-	    printf("\nPedidos não finalizados: %d\n", pedidosNaoFinalizados);
+	    printf("\nPedidos nao finalizados: %d\n", pedidosNaoFinalizados);
     }
     
 }
@@ -392,10 +392,10 @@ void Executar() {
 
             case 'C': {
                 clrscr();
-                printf("Defina o tempo total de simulaÃ§Ã£o (em unidades de tempo):\n");
+                printf("Defina o tempo total de simulacao (em unidades de tempo):\n");
                 scanf("%d", &tempoSimulacao);
                 getche();
-                printf("Tempo de simulaÃ§Ã£o definido como %d unidades.\n", tempoSimulacao);
+                printf("Tempo de simulacao definido como %d unidades.\n", tempoSimulacao);
                 break;
             }
             case 'D':
