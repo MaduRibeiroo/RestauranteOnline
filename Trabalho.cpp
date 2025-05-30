@@ -241,13 +241,8 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
     }
     else{
     	srand(time(NULL));
-<<<<<<< HEAD
-	    qtdPedidos = 5 + rand() % 16; // entre 5 e 20
-	    printf("Numero de pedidos sorteados para distribuir: %d\n", qtdPedidos);
-=======
 	    qtdPedidos = 5 + rand() % 16; 
 	    printf("Número de pedidos sorteados para distribuir: %d\n", qtdPedidos);
->>>>>>> 27a71fa1b51cb4ba71fb9bcd7179ca1e2c08a5a1
 	
 	    DistribuirPedidos(desc, qtdPedidos);
 	
@@ -316,14 +311,8 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
 		    cz = cz->prox;
 		}
 		
-<<<<<<< HEAD
-		// Relatório final
-		printf("\n=== Fim da simulacao ===\n");
-		printf("\n--- Relatorio Final ---\n");
-=======
 		printf("\n=== Fim da simulação ===\n");
 		printf("\n--- Relatório Final ---\n");
->>>>>>> 27a71fa1b51cb4ba71fb9bcd7179ca1e2c08a5a1
 		printf("Pedidos Expresso finalizados: %d\n", totalExpresso);
 	    printf("Pedidos Regular finalizados: %d\n", totalRegular);
 	    printf("Pedidos Pre-Agendado finalizados: %d\n", totalPreAgendado);
