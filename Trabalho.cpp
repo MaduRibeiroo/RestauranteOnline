@@ -8,9 +8,9 @@
 
 #include "Tad.h"
 
-//	O programa deve utilizar: Descritor, Listas DinÃƒÆ’Ã‚Â¢micas Simplesmente e Duplamente encadeadas, todos ligados, conforme a otimizaÃƒÂ¯Ã‚Â¿Ã‚Â½ÃƒÂ¯Ã‚Â¿Ã‚Â½o do processo evidenciado
-//do while(!kbhit()&& tempo)
-// insere, retira, volta, esc
+// Maria Eduarda Ribeiro Nunes 	102317429
+// Natalia Viudes Barbosa 		102316597
+
 int totalExpresso = 0, totalRegular = 0, totalPreAgendado = 0;
 int somaEsperaExpresso = 0, somaEsperaRegular = 0, somaEsperaPreAgendado = 0;
 int pedidosNaoFinalizados = 0;
@@ -35,11 +35,11 @@ char Menu(){
     return toupper(getch());
 }
 
-//caixa para cuxinehiro
+//caixa para cozinheiro
 TpCozinheiro *NovaCaixaCozinheiro(int id){
 	TpCozinheiro *caixa = new TpCozinheiro;
 	caixa -> id = id;
-	caixa -> estado = 'L'; //L de Livre
+	caixa -> estado = 'L'; //L de Livre, O de Ocupado
 	caixa -> prox = NULL;
 	caixa -> listaPedidos = NULL;
 	return caixa;
@@ -54,7 +54,7 @@ TpPedido* GerarPedidoAleatorio() {
 
    
     if (ptr != NULL) {
-        linha_aleatoria = 1 + (rand() % 15); // Supondo atÃƒÆ’Ã‚Â© 15 linhas
+        linha_aleatoria = 1 + (rand() % 15); 
         rewind(ptr);
 
         while (linha_atual <= linha_aleatoria) {
@@ -80,7 +80,6 @@ TpPedido* GerarPedidoAleatorio() {
                 }
                 linha_atual++;
             } else {
-                // ForÃƒÆ’Ã‚Â§a saÃƒÆ’Ã‚Â­da do laÃƒÆ’Ã‚Â§o caso erro de leitura (sem usar break)
                 linha_atual = linha_aleatoria + 1;
             }
         }
@@ -88,7 +87,7 @@ TpPedido* GerarPedidoAleatorio() {
         fclose(ptr);
     }
 
-    return pedido; // permitido aqui, pois estÃƒÆ’Ã‚Â¡ no fim da funÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o
+    return pedido; 
 }
 
 int EncontrarTempoPreparoOriginal(TpPedido *pedido) {
@@ -98,10 +97,6 @@ int EncontrarTempoPreparoOriginal(TpPedido *pedido) {
     }
     return 0;
 }
-
-
-
-
 
 int CalcularCarga(TpPedido *lista) {
     int carga = 0;
@@ -119,7 +114,7 @@ int EncontrarTempoEntrada(TpPedido *pedido) {
             return temposEntrada[i];
         i++;
     }
-    return 0; // Se não encontrar, retorna 0 (seguro)
+    return 0;
 }
 
 
@@ -131,7 +126,7 @@ void DistribuirPedidos(TpDesc &desc, int qtdPedidos) {
 
         // Armazena o pedido e tempo de entrada (0 por enquanto)
         pedidosGerados[pedidosGeradosTotal] = novoPedido;
-        temposEntrada[pedidosGeradosTotal] = 0; // tempo inicial da simulaÃ§Ã£o
+        temposEntrada[pedidosGeradosTotal] = 0; 
         pedidosGeradosTotal++;
 
         TpCozinheiro *escolhido = desc.inicio;
@@ -246,8 +241,13 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
     }
     else{
     	srand(time(NULL));
+<<<<<<< HEAD
 	    qtdPedidos = 5 + rand() % 16; // entre 5 e 20
 	    printf("Numero de pedidos sorteados para distribuir: %d\n", qtdPedidos);
+=======
+	    qtdPedidos = 5 + rand() % 16; 
+	    printf("Número de pedidos sorteados para distribuir: %d\n", qtdPedidos);
+>>>>>>> 27a71fa1b51cb4ba71fb9bcd7179ca1e2c08a5a1
 	
 	    DistribuirPedidos(desc, qtdPedidos);
 	
@@ -302,10 +302,9 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
 	            coz = coz->prox;
 	        }
 	
-	        Sleep(500); // Espera 1 segundo entre unidades de tempo
+	        Sleep(500); 
 	    }
 	
-		// Contar pedidos não finalizados
 	    pedidosNaoFinalizados = 0;
 	    TpCozinheiro *cz = desc.inicio;
 	    while (cz != NULL) {
@@ -317,9 +316,14 @@ void SimularRestaurante(TpDesc &desc, int tempoSimulacao) {
 		    cz = cz->prox;
 		}
 		
+<<<<<<< HEAD
 		// Relatório final
 		printf("\n=== Fim da simulacao ===\n");
 		printf("\n--- Relatorio Final ---\n");
+=======
+		printf("\n=== Fim da simulação ===\n");
+		printf("\n--- Relatório Final ---\n");
+>>>>>>> 27a71fa1b51cb4ba71fb9bcd7179ca1e2c08a5a1
 		printf("Pedidos Expresso finalizados: %d\n", totalExpresso);
 	    printf("Pedidos Regular finalizados: %d\n", totalRegular);
 	    printf("Pedidos Pre-Agendado finalizados: %d\n", totalPreAgendado);
